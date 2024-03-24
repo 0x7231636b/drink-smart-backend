@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: DrinkSmartBackend
+  jpa:
+    hibernate:
+      ddl-auto: update
