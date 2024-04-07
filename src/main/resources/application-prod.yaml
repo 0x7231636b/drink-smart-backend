@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: DrinkSmartBackend
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:postgresql://postgres/drink_smart
+    username: postgres
+    password: postgres
