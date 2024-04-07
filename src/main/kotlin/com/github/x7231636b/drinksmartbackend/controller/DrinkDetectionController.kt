@@ -26,7 +26,7 @@ class DrinkDetectionController(private val drinkDetectionService: DrinkDetection
   @PutMapping("/update")
   fun putDrinkData(@RequestBody drinkData: DrinkData): ResponseEntity<String> {
     log.info("Changing data: $drinkData")
-    drinkDetectionService.saveDrinkData(drinkData)
+    drinkDetectionService.updateDrinkData(drinkData)
     return ResponseEntity.ok("Data changed successfully")
   }
 
