@@ -47,4 +47,15 @@ class DrinkDetectionController(private val drinkDetectionService: DrinkDetection
     log.info("Volume for user this day: $response")
     return ResponseEntity.ok(response)
   }
+
+  @GetMapping("/getVolumesForMonth")
+  fun getVolumesForMonth(
+      @RequestParam userName: String,
+      @RequestParam date: Long?
+  ): ResponseEntity<List<GetVolumeForDayResponse>> {
+    log.info("Getting volumes for user: $userName at date: $date")
+    var response = drinkDetectionService.getVolumesForMonth(userName, date)
+    log.info("Volumes for user this month: $response")
+    return ResponseEntity.ok(response)
+  }
 }

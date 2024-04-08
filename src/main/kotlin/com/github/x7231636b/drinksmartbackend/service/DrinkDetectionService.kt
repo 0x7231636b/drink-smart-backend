@@ -4,7 +4,10 @@ import DrinkData
 import GetVolumeForDayResponse
 import com.github.x7231636b.drinksmartbackend.entity.DrinkDataEntity
 import com.github.x7231636b.drinksmartbackend.repository.DrinkDetectionRepository
-import com.github.x7231636b.drinksmartbackend.util.isSameDay
+import com.github.x7231636b.drinksmartbackend.util.getEndOfDay
+import com.github.x7231636b.drinksmartbackend.util.getEndOfMonth
+import com.github.x7231636b.drinksmartbackend.util.getStartOfDay
+import com.github.x7231636b.drinksmartbackend.util.getStartOfMonth
 import java.util.UUID
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,13 +41,45 @@ class DrinkDetectionService(private val drinkDetectionRepository: DrinkDetection
 
   fun getVolumeForDay(userName: String, date: Long?): GetVolumeForDayResponse {
     val dateToUse = date ?: System.currentTimeMillis()
-    var list =
-        drinkDetectionRepository.findAllByUserName(userName).filter {
-          isSameDay(it.timeStamp, dateToUse)
-        }
+
+    val start = getStartOfDay(dateToUse)
+    val end = getEndOfDay(dateToUse)
+
+    var list = drinkDetectionRepository.findAllByUserNameAndTimeStampBetween(userName, start, end)
     var sips = list.size
     var volume = list.map { it.volume }.sum()
+
     var response = GetVolumeForDayResponse(userName, dateToUse, volume, sips)
     return response
+  }
+
+  fun getVolumesForMonth(userName: String, date: Long?): List<GetVolumeForDayResponse> {
+    val dateToUse = date ?: System.currentTimeMillis()
+
+    val start = getStartOfMonth(dateToUse)
+    val end = getEndOfMonth(dateToUse)
+
+    val monthlyEntries =
+        drinkDetectionRepository.findAllByUserNameAndTimeStampBetween(userName, start, end)
+
+    val responseList = mutableListOf<GetVolumeForDayResponse>()
+    for (i in 1..31) {
+      val loopDayOffset = start + i * 24 * 60 * 60 * 1000
+      val dayStart = getStartOfDay(loopDayOffset)
+      val dayEnd = getEndOfDay(loopDayOffset)
+
+      val dayList = monthlyEntries.filter { it.timeStamp in dayStart..dayEnd }
+
+      if (dayList.isEmpty()) continue
+
+      val sips = dayList.size
+      val volume = dayList.map { it.volume }.sum()
+
+      val middleOfDay = (dayStart + dayEnd) / 2
+      val volumeForDay = GetVolumeForDayResponse(userName, middleOfDay, volume, sips)
+      responseList.add(volumeForDay)
+    }
+
+    return responseList
   }
 }
