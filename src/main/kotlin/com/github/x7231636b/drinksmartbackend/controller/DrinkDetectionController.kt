@@ -22,7 +22,6 @@ class DrinkDetectionController(private val drinkDetectionService: DrinkDetection
     return ResponseEntity.ok("Data received successfully")
   }
 
-  /** Same as POST but indicating an update to the outside world */
   @PutMapping("/update")
   fun putDrinkData(@RequestBody drinkData: DrinkData): ResponseEntity<String> {
     log.info("Changing data: $drinkData")
