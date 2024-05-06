@@ -1,6 +1,7 @@
 package com.github.x7231636b.drinksmartbackend.controller
 
 import DrinkData
+import GetVolumeForDayResponse
 import com.github.x7231636b.drinksmartbackend.entity.DrinkDataEntity
 import com.github.x7231636b.drinksmartbackend.service.DrinkDetectionService
 import org.slf4j.Logger
@@ -15,20 +16,24 @@ class DrinkDetectionController(private val drinkDetectionService: DrinkDetection
   var log: Logger = LoggerFactory.getLogger(DrinkDetectionController::class.java)
 
   @PostMapping("/add")
-  fun postDrinkDataEntity(@RequestBody DrinkDataEntity: DrinkDataEntity): ResponseEntity<String> {
+  fun postDrinkDataEntity(@RequestBody drinkData: DrinkData): ResponseEntity<String> {
     log.info("Received data: $DrinkDataEntity")
-    drinkDetectionService.saveDrinkDataEntity(DrinkDataEntity)
+    drinkDetectionService.saveDrinkData(drinkData)
     return ResponseEntity.ok("Data received successfully")
+  }
+
+  @PutMapping("/update")
+  fun putDrinkData(@RequestBody drinkData: DrinkData): ResponseEntity<String> {
+    log.info("Changing data: $drinkData")
+    drinkDetectionService.updateDrinkData(drinkData)
+    return ResponseEntity.ok("Data changed successfully")
   }
 
   @GetMapping("/get")
   fun getDrinkDataEntity(@RequestParam userName: String): ResponseEntity<List<DrinkData>> {
-    log.info("Getting data for user: $userName")
-    val list =
-        drinkDetectionService.getDrinkDataEntity(userName).map {
-          DrinkData(it.userName, it.timeStamp, it.volume, null)
-        }
-    log.info("Data for user: $userName is: $list")
+    log.info("getDrinkDataEntity: data for user: $userName")
+    val list = drinkDetectionService.getDrinkData(userName).map { DrinkData.fromEntity(it) }
+    log.info("Found ${list.size} entries for user: $userName")
     return ResponseEntity.ok(list)
   }
 
@@ -36,14 +41,21 @@ class DrinkDetectionController(private val drinkDetectionService: DrinkDetection
   fun getVolumeForDay(
       @RequestParam userName: String,
       @RequestParam date: Long?
-  ): ResponseEntity<DrinkData> {
-    val dateToUse = date ?: System.currentTimeMillis()
-    log.info("Getting volume for user: $userName at date: $dateToUse")
-    var list = drinkDetectionService.getDrinkDataEntity(userName, dateToUse)
-    var sips = list.size
-    var volume = list.map { it.volume }.sum()
-    log.info("Volume for user: $userName at date: $dateToUse is: $volume")
-    var response = DrinkData(userName, dateToUse, volume, sips)
+  ): ResponseEntity<GetVolumeForDayResponse> {
+    log.info("Getting volume for user: $userName at date: $date")
+    var response = drinkDetectionService.getVolumeForDay(userName, date)
+    log.info("Volume for user this day: $response")
+    return ResponseEntity.ok(response)
+  }
+
+  @GetMapping("/getVolumesForMonth")
+  fun getVolumesForMonth(
+      @RequestParam userName: String,
+      @RequestParam date: Long?
+  ): ResponseEntity<List<GetVolumeForDayResponse>> {
+    log.info("Getting volumes for user: $userName at date: $date")
+    var response = drinkDetectionService.getVolumesForMonth(userName, date)
+    log.info("Volumes for user this month: $response")
     return ResponseEntity.ok(response)
   }
 }

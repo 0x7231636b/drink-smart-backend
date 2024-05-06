@@ -8,4 +8,10 @@ import org.springframework.stereotype.Repository
 @Repository
 interface DrinkDetectionRepository : CrudRepository<DrinkDataEntity, UUID> {
   fun findAllByUserName(userName: String): List<DrinkDataEntity>
+
+  fun findAllByUserNameAndTimeStampBetween(
+      userName: String,
+      start: Long,
+      end: Long
+  ): List<DrinkDataEntity>
 }
