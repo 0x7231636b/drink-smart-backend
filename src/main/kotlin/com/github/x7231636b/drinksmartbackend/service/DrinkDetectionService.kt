@@ -47,7 +47,7 @@ class DrinkDetectionService(private val drinkDetectionRepository: DrinkDetection
 
     var list = drinkDetectionRepository.findAllByUserNameAndTimeStampBetween(userName, start, end)
     var sips = list.size
-    var volume = list.fold(0) { sum, currentEntry -> sum + currentEntry.volume }
+    var volume = list.fold(0) { sum, it -> sum + it.volume }
 
     var response = GetVolumeForDayResponse(userName, dateToUse, volume, sips)
     return response
@@ -73,7 +73,7 @@ class DrinkDetectionService(private val drinkDetectionRepository: DrinkDetection
       if (dayList.isEmpty()) continue
 
       val sips = dayList.size
-      val volume = dayList.map { it.volume }.sum()
+      val volume = dayList.fold(0) { sum, it -> sum + it.volume }
 
       val middleOfDay = (dayStart + dayEnd) / 2
       val volumeForDay = GetVolumeForDayResponse(userName, middleOfDay, volume, sips)
